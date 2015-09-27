@@ -1,0 +1,20 @@
+runanalysis <- function() {
+  labeldata <- read.table("UCI HAR Dataset/features.txt")
+  activitylabel <- read.table("UCI HAR Dataset/activity_labels.txt",col.names = c('id','activity'))
+  Xtestdata <- read.table("UCI HAR Dataset/test/X_test.txt",col.names = labeldata$V2)
+  Xtraindata <- read.table("UCI HAR Dataset/train/X_train.txt",col.names = labeldata$V2)
+  ytestdata <- read.table("UCI HAR Dataset/test/y_test.txt")
+  ytraindata <- read.table("UCI HAR Dataset/train/y_train.txt")
+  xtestsubject <- read.table("UCI HAR Dataset/test/subject_test.txt",col.names = c('subject'))
+  xtrainsubject <- read.table("UCI HAR Dataset/train/subject_train.txt",col.names = c('subject'))
+  mytestdata <- merge(ytestdata,activitylabel,by.x="V1",by.y="id",all=FALSE)
+  mytraindata <- merge(ytraindata,activitylabel,by.x="V1",by.y="id",all=FALSE)
+  Xtestdataf <- select(Xtestdata,contains(".mean."),contains(".std."))
+  Xtraindataf <- select(Xtraindata,contains(".mean."),contains(".std."))
+  testcompdata <- cbind(Xtestdataf,activity=mytestdata$activity,subject=xtestsubject$subject)
+  traincompdata <- cbind(Xtraindataf,activity=mytraindata$activity,subject=xtrainsubject$subject)
+  compdata <- rbind(testcompdata,traincompdata)
+  finaldata <- aggregate(select(compdata,-(activity),-(subject)),by = list(activity=compdata$activity,subject=compdata$subject),FUN = mean)
+  write.table(finaldata,file = "complproj.txt",row.names = FALSE)
+  finaldata
+}
